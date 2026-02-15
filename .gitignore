@@ -1,0 +1,53 @@
+# Environment variables
+.env
+.env.local
+
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+bin/
+backend/tmp/
+go.work
+
+# Frontend (Node.js)
+node_modules/
+dist/
+dist-ssr/
+*.local
+.vite/
+frontend/.vite/
+frontend/dist/
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Docker
+docker-compose.override.yml
+
+# Vespa data (only in development)
+vespa/var/
+
+# Temporary files
+tmp/
+*.tmp
+.cache/
+
+# OS
+Thumbs.db

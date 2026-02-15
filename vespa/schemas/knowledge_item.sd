@@ -1,0 +1,75 @@
+schema knowledge_item {
+
+    document knowledge_item {
+
+        # ユニークID
+        field id type string {
+            indexing: summary | attribute
+        }
+
+        # ファイル名/タイトル
+        field title type string {
+            indexing: summary | index
+            index: enable-bm25
+        }
+
+        # コード/テキスト本文
+        field content type string {
+            indexing: summary | index
+            index: enable-bm25
+        }
+
+        # ソース種別 (github_code, github_issue, notion_page等)
+        field source_type type string {
+            indexing: summary | attribute
+        }
+
+        # 元URLへのリンク
+        field source_url type string {
+            indexing: summary
+        }
+
+        # GitHubリポジトリ名
+        field repo_name type string {
+            indexing: summary | attribute
+        }
+
+        # ファイルパス
+        field file_path type string {
+            indexing: summary | attribute
+        }
+
+        # プログラミング言語
+        field language type string {
+            indexing: summary | attribute
+        }
+
+        # 作成日時 (Unix timestamp)
+        field created_at type long {
+            indexing: summary | attribute
+        }
+
+        # 更新日時 (Unix timestamp)
+        field updated_at type long {
+            indexing: summary | attribute
+        }
+    }
+
+    fieldset default {
+        fields: title, content
+    }
+
+    # デフォルトのランキングプロファイル (BM25)
+    rank-profile default {
+        first-phase {
+            expression: bm25(title) + bm25(content)
+        }
+    }
+
+    # タイトル重視のランキング
+    rank-profile title-focused {
+        first-phase {
+            expression: bm25(title) * 2 + bm25(content)
+        }
+    }
+}

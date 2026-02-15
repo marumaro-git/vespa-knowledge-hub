@@ -1,0 +1,217 @@
+version: '3'
+
+vars:
+  VESPA_URL: '{{.VESPA_URL | default "http://localhost:8080"}}'
+  API_PORT: '{{.API_PORT | default "3000"}}'
+  FRONTEND_PORT: '5173'
+
+tasks:
+  default:
+    desc: Show available tasks
+    cmds:
+      - task --list
+
+  # Development setup
+  dev:setup:
+    desc: Setup development environment
+    cmds:
+      - task: vespa:start
+      - task: vespa:wait
+      - task: vespa:deploy
+      - echo "✅ Development environment is ready!"
+      - echo ""
+      - echo "Next steps:"
+      - echo "  1. Set environment variables in .env"
+      - echo "  2. Run 'task index:run' to index GitHub repositories"
+      - echo "  3. Run 'task backend:run' and 'task frontend:dev' in separate terminals"
+
+  # Vespa tasks
+  vespa:start:
+    desc: Start Vespa container
+    dir: vespa
+    cmds:
+      - docker-compose up -d
+      - echo "⏳ Waiting for Vespa to start..."
+
+  vespa:stop:
+    desc: Stop Vespa container
+    dir: vespa
+    cmds:
+      - docker-compose down
+
+  vespa:restart:
+    desc: Restart Vespa container
+    cmds:
+      - task: vespa:stop
+      - task: vespa:start
+
+  vespa:logs:
+    desc: Show Vespa logs
+    dir: vespa
+    cmds:
+      - docker-compose logs -f vespa
+
+  vespa:health:
+    desc: Check Vespa health status
+    cmds:
+      - curl -sf {{.VESPA_URL}}/state/v1/health || (echo "❌ Vespa is not healthy" && exit 1)
+      - echo "✅ Vespa is healthy"
+
+  vespa:wait:
+    desc: Wait for Vespa to be ready
+    cmds:
+      - |
+        echo "⏳ Waiting for Vespa to be ready..."
+        max_attempts=60
+        attempt=0
+        until curl -sf {{.VESPA_URL}}/state/v1/health > /dev/null 2>&1; do
+          attempt=$((attempt + 1))
+          if [ $attempt -eq $max_attempts ]; then
+            echo "❌ Vespa failed to start after $max_attempts attempts"
+            exit 1
+          fi
+          echo "  Attempt $attempt/$max_attempts..."
+          sleep 2
+        done
+        echo "✅ Vespa is ready!"
+
+  vespa:deploy:
+    desc: Deploy Vespa application
+    dir: vespa
+    cmds:
+      - ./deploy.sh
+
+  vespa:status:
+    desc: Show Vespa status
+    cmds:
+      - vespa status
+
+  # Backend tasks
+  backend:init:
+    desc: Initialize Go backend
+    dir: backend
+    cmds:
+      - go mod init github.com/yourusername/vespa-knowledge-hub
+      - go get github.com/google/go-github/v57/github
+      - go get golang.org/x/oauth2
+      - go get github.com/joho/godotenv
+      - go mod tidy
+    status:
+      - test -f backend/go.mod
+
+  backend:run:
+    desc: Run API server
+    dir: backend
+    deps: [backend:init]
+    cmds:
+      - go run cmd/api/main.go
+
+  backend:test:
+    desc: Run backend tests
+    dir: backend
+    cmds:
+      - go test -v ./...
+
+  backend:build:
+    desc: Build backend binaries
+    dir: backend
+    cmds:
+      - go build -o ../bin/api cmd/api/main.go
+      - go build -o ../bin/indexer cmd/indexer/main.go
+
+  # Indexer tasks
+  index:run:
+    desc: Run GitHub indexer
+    dir: backend
+    deps: [backend:init]
+    cmds:
+      - |
+        if [ -z "$GITHUB_TOKEN" ]; then
+          echo "❌ GITHUB_TOKEN is not set"
+          echo "Set it with: export GITHUB_TOKEN=ghp_your_token"
+          exit 1
+        fi
+        if [ -z "$TARGET_REPOS" ]; then
+          echo "❌ TARGET_REPOS is not set"
+          echo "Set it with: export TARGET_REPOS=owner/repo1,owner/repo2"
+          exit 1
+        fi
+        go run cmd/indexer/main.go
+
+  # Frontend tasks
+  frontend:init:
+    desc: Initialize frontend
+    dir: frontend
+    cmds:
+      - npm install
+    status:
+      - test -d frontend/node_modules
+
+  frontend:dev:
+    desc: Run frontend development server
+    dir: frontend
+    deps: [frontend:init]
+    cmds:
+      - npm run dev
+
+  frontend:build:
+    desc: Build frontend for production
+    dir: frontend
+    deps: [frontend:init]
+    cmds:
+      - npm run build
+
+  frontend:preview:
+    desc: Preview production build
+    dir: frontend
+    deps: [frontend:build]
+    cmds:
+      - npm run preview
+
+  # Testing tasks
+  test:all:
+    desc: Run all tests
+    cmds:
+      - task: backend:test
+
+  # Clean tasks
+  clean:
+    desc: Clean build artifacts
+    cmds:
+      - rm -rf bin/
+      - rm -rf frontend/dist/
+      - rm -rf backend/tmp/
+
+  clean:all:
+    desc: Clean everything including Docker volumes
+    cmds:
+      - task: clean
+      - task: vespa:stop
+      - docker volume rm vespa-knowledge-hub_vespa-data || true
+      - echo "✅ Cleaned all artifacts and Docker volumes"
+
+  # Utility tasks
+  check:env:
+    desc: Check required environment variables
+    cmds:
+      - |
+        errors=0
+        if [ -z "$GITHUB_TOKEN" ]; then
+          echo "❌ GITHUB_TOKEN is not set"
+          errors=$((errors + 1))
+        fi
+        if [ -z "$TARGET_REPOS" ]; then
+          echo "❌ TARGET_REPOS is not set"
+          errors=$((errors + 1))
+        fi
+        if [ $errors -gt 0 ]; then
+          echo ""
+          echo "Please set the required environment variables in .env"
+          exit 1
+        fi
+        echo "✅ All required environment variables are set"
+
+  docs:serve:
+    desc: Serve documentation locally
+    cmds:
+      - python3 -m http.server 8000 -d docs/

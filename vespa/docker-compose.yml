@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  vespa:
+    image: vespaengine/vespa:8
+    container_name: vespa
+    hostname: localhost
+    ports:
+      - "8080:8080"   # Query and Document API
+      - "19071:19071" # Config server
+      - "19050:19050" # Node admin
+    volumes:
+      - vespa-data:/opt/vespa/var
+      - ./:/vespa-app:ro
+    environment:
+      - VESPA_CONFIGSERVERS=localhost
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/state/v1/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 120s
+
+volumes:
+  vespa-data:
