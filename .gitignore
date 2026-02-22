@@ -13,6 +13,9 @@
 bin/
 backend/tmp/
 go.work
+api
+indexer
+test-connection
 
 # Frontend (Node.js)
 node_modules/
