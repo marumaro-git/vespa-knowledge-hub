@@ -172,3 +172,42 @@
   margin: 0;
   font-size: 0.875rem;
 }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .result-item {
+    padding: 1rem;
+  }
+
+  .result-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .result-meta {
+    margin-top: 0.5rem;
+  }
+
+  .result-info {
+    flex-wrap: wrap;
+  }
+
+  .code-preview {
+    padding: 0.75rem;
+    font-size: 0.8125rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .result-title {
+    font-size: 1rem;
+  }
+
+  .result-info {
+    font-size: 0.8125rem;
+  }
+
+  .code-preview {
+    font-size: 0.75rem;
+  }
+}

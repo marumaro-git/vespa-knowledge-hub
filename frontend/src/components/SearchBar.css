@@ -97,3 +97,48 @@
 .clear-button:hover {
   background: #e5e7eb;
 }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .search-bar {
+    padding: 1rem;
+  }
+
+  .search-input-group {
+    flex-direction: column;
+  }
+
+  .search-button {
+    width: 100%;
+  }
+
+  .filters {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .filter-group {
+    width: 100%;
+  }
+
+  .filter-select,
+  .filter-input {
+    width: 100%;
+    min-width: auto;
+  }
+
+  .clear-button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .search-input {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+
+  .filter-select,
+  .filter-input {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+}
