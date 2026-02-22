@@ -30,14 +30,14 @@ tasks:
     desc: Start Vespa container
     dir: vespa
     cmds:
-      - docker-compose up -d
+      - docker compose up -d
       - echo "⏳ Waiting for Vespa to start..."
 
   vespa:stop:
     desc: Stop Vespa container
     dir: vespa
     cmds:
-      - docker-compose down
+      - docker compose down
 
   vespa:restart:
     desc: Restart Vespa container
@@ -49,7 +49,7 @@ tasks:
     desc: Show Vespa logs
     dir: vespa
     cmds:
-      - docker-compose logs -f vespa
+      - docker compose logs -f vespa
 
   vespa:health:
     desc: Check Vespa health status
