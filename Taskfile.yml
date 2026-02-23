@@ -13,7 +13,7 @@ tasks:
 
   # Development setup
   dev:setup:
-    desc: Setup development environment
+    desc: Setup development environment (first time only)
     cmds:
       - task: vespa:start
       - task: vespa:wait
@@ -23,7 +23,35 @@ tasks:
       - echo "Next steps:"
       - echo "  1. Set environment variables in .env"
       - echo "  2. Run 'task index:run' to index GitHub repositories"
-      - echo "  3. Run 'task backend:run' and 'task frontend:dev' in separate terminals"
+      - echo "  3. Run 'task dev:start' to start all services"
+
+  dev:start:
+    desc: Start all services (Vespa, Backend API, Frontend) for development
+    cmds:
+      - task: vespa:start
+      - task: vespa:wait
+      - |
+        trap 'echo ""; echo "Stopping services..."; kill $(jobs -p) 2>/dev/null; wait 2>/dev/null; echo "✅ All services stopped"' INT TERM
+        echo "🚀 Starting Backend API (http://localhost:{{.API_PORT}})..."
+        (cd backend && go run cmd/api/main.go) &
+        echo "🚀 Starting Frontend (http://localhost:{{.FRONTEND_PORT}})..."
+        (cd frontend && npm run dev) &
+        echo ""
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "✅ All services started!"
+        echo "  Backend API: http://localhost:{{.API_PORT}}"
+        echo "  Frontend:    http://localhost:{{.FRONTEND_PORT}}"
+        echo "  Vespa:       http://localhost:8080"
+        echo ""
+        echo "Press Ctrl+C to stop all services"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        wait
+
+  dev:stop:
+    desc: Stop all services
+    cmds:
+      - task: vespa:stop
+      - echo "✅ Vespa stopped (Backend and Frontend processes stopped via Ctrl+C)"
 
   # Vespa tasks
   vespa:start:
