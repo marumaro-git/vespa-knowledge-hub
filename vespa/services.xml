@@ -3,7 +3,51 @@
 
     <container id="default" version="1.0">
         <search />
-        <component id="linguistics" class="com.yahoo.language.lucene.LuceneLinguistics" bundle="lucene-linguistics" />
+        <component id="linguistics" class="com.yahoo.language.lucene.LuceneLinguistics" bundle="lucene-linguistics">
+            <config name="com.yahoo.language.lucene.lucene-analysis">
+                <analysis>
+                    <!-- 言語不明または混合言語の場合のデフォルトとしてnGramを適用 -->
+                    <item key="unknown">
+                        <tokenizer>
+                            <name>nGram</name>
+                            <conf>
+                                <item key="minGramSize">2</item>
+                                <item key="maxGramSize">3</item>
+                            </conf>
+                        </tokenizer>
+                        <tokenFilters>
+                            <item><name>lowercase</name></item>
+                        </tokenFilters>
+                    </item>
+                    <!-- 日本語にもnGramを適用 -->
+                    <item key="ja">
+                        <tokenizer>
+                            <name>nGram</name>
+                            <conf>
+                                <item key="minGramSize">2</item>
+                                <item key="maxGramSize">3</item>
+                            </conf>
+                        </tokenizer>
+                        <tokenFilters>
+                            <item><name>lowercase</name></item>
+                        </tokenFilters>
+                    </item>
+                    <!-- 英語にもnGramを適用 -->
+                    <item key="en">
+                        <tokenizer>
+                            <name>nGram</name>
+                            <conf>
+                                <item key="minGramSize">2</item>
+                                <item key="maxGramSize">3</item>
+                            </conf>
+                        </tokenizer>
+                        <tokenFilters>
+                            <item><name>lowercase</name></item>
+                        </tokenFilters>
+                    </item>
+                </analysis>
+            </config>
+        </component>
         <document-api />
         <http>
             <server id="default" port="8080" />
