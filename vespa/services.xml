@@ -3,6 +3,7 @@
 
     <container id="default" version="1.0">
         <search />
+        <component id="linguistics" class="com.yahoo.language.lucene.LuceneLinguistics" bundle="lucene-linguistics" />
         <document-api />
         <http>
             <server id="default" port="8080" />
